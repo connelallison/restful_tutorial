@@ -180,7 +180,7 @@ And add the following to your `entries/new` path registration:
 
 You should now be able to navigate easily around your site.
 
-## Update and Delete
+## Update 
 
 In addition to reading our blog posts and adding new ones, we may also wish to edit or remove them. We will begin with editing. Insert the following code into your `entry_get` proc, just below where you append your entry_content, to add a link to an editing page:
 
@@ -219,7 +219,7 @@ register GET /entries/:entry_id/edit {entry_id} {
     return [qc::form method POST action "/entries/$entry_id" $form]
 }
 ```
-The link should now lead to a new page containing a form prefilled with the current title and content of your blog entry. Currently, clicking the "Update" button should return "Not Found". Add this to `url_handlers`:
+The link should now lead to a new page containing a form prepopulated with the current title and content of your blog entry. Currently, clicking the "Update" button should return "Not Found". Add this to `url_handlers`:
 
 ```tcl
 register PUT /entries/:entry_id {entry_id entry_title entry_content} {
@@ -242,6 +242,8 @@ proc entry_update {entry_id entry_title entry_content} {
 ```
 
 Your update function should now be working properly - try editing a blog post to confirm this.
+
+## Delete
 
 Finally, we must add a way to delete our blog posts. Insert the following into your `entry_get` proc, directly under your edit link:
 
