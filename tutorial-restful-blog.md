@@ -123,7 +123,7 @@ We also used the `form` proc to construct the form you passed to the user. It wi
 return [qc::form method POST action /entries $form]
 ```
 
-Here, it returns a form element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you. Its documentation can be read [here](procs/form.md).
+Here, it returns a `<form>` element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you. Its documentation can be read [here](procs/form.md).
 
 ### Index and navigation
 
@@ -241,4 +241,33 @@ proc entry_update {entry_id entry_title entry_content} {
 }
 ```
 
-Your update function should now be working properly. Try editing a blog post to confirm this.
+Your update function should now be working properly - try editing a blog post to confirm this.
+
+Finally, we must add a way to delete our blog posts. Insert the following into your `entry_get` proc, directly under your edit link:
+
+```tcl
+    append html [h br]
+    append html [form method DELETE action /entries/$entry_id \
+		     [h input type submit name submit value "Delete this blog"]]
+```
+
+You should now have a "Delete this blog" button below your "Update this blog" link. Clicking it should lead to a "Not Found" error. Add the following to `url_handlers`:
+
+```tcl
+register DELETE /entries/:entry_id {entry_id} {
+    #| Delete an entry
+    entry_delete $entry_id
+    ns_returnredirect [qc::url "/entries"]
+}
+```
+
+To correct our final server error, add the `entry_delete` proc to `entry.tcl`:
+
+```tcl
+proc entry_delete {entry_id} {
+    #| Delete an entry
+    db_dml "delete from entries where entry_id=:entry_id"
+}
+```
+
+Save, restart, and try deleting a blog entry. You should be sent back to the index page, and the blog you have deleted should no longer be visible there. Your site now has full CRUD functionality and a set of RESTful endpoints. Well done.
