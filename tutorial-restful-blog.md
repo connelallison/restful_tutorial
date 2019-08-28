@@ -83,7 +83,7 @@ You should now be getting "Internal Server Error" once again. Check the logs if 
 
 ```tcl
 proc entry_get {entry_id} {
-    #| 
+    #| Return html summary for this entry 
     db_1row {
 	select
 	entry_title,
@@ -105,8 +105,18 @@ You have now added create and read functionality to your site. Before moving on,
 
 We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. For more detail, see its documentation [here](registration.md).
 
-We also used the `form` proc to construct the form you passed to the user. It will return a form element, using the arguments you pass it as key-value pairs and the final unpaired argument you pass it (if applicable) placed in the body of the element. In our example:
+When constructing our form (and later in the `entry_get` proc), we used the `h` proc to generate html elements for us. The first argument you pass it is the type of html element you want. After specifying the type, any additional elements will be interpreted as alternating key value pairs. If the final argument is unpaired, it is placed in the body of the element. Consider this example:
 
-`return [qc::form method POST action /entries $form]`
+```tcl
+h a href "http://localhost/entries/new" "Submit another blog"
+```
 
-It returns a form element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you.
+This will return a string containing the HTML for an <a> element that reads "Submit another blog" and links back to the new entry form. It is preferable to use the `h` proc instead of writing strings of raw HTML yourself, and essential for anything that involves variable substitution - aside from making construction of HTML easier, it also takes care of sanitising your data and preventing critical security vulnerabilities such as SQL injection. 
+
+We also used the `form` proc to construct the form you passed to the user. It will return a form element, using the arguments you pass it as key-value pairs and the final unpaired argument you pass it (if applicable) placed in the body of the element. See our example:
+
+```tcl
+return [qc::form method POST action /entries $form]
+```
+
+Here, it returns a form element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you.
