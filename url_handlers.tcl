@@ -7,20 +7,6 @@ register GET /entries {} {
 
 register GET /entries/new {} {
     #| Form for submitting new blog entry
-    # set form {
-    # 	<label>Blog Title:</label>
-    # 	<br>
-    # 	<input type="text" name="entry_title">
-    # 	<br>
-    # 	<label>Blog Content:</label>
-    # 	<br>
-    # 	<textarea name="entry_content" style="width: 400px; height: 120px;"></textarea>
-    # 	<br>
-    # 	<input type="submit" name="submit" value="Submit">
-    # 	<br><br>
-    # 	<a href="http://localhost/entries">Return to index</a>
-    # }
-
     set form ""
     append form [h label "Blog Title:"]
     append form [h br]
@@ -78,8 +64,8 @@ register GET /entries/:entry_id/edit {entry_id} {
     append form [h br]
     append form [h textarea name entry_content style "width: 400px; height: 120px;" $entry_content]
     append form [h br]
-    append form [input type hidden name _method value PUT]
-    append form [input type submit name submit value Update]
+    append form [h input type hidden name _method value PUT]
+    append form [h input type submit name submit value Update]
     append form [h br]
     append form [h br]
     append form [h a href "http://localhost/entries" "Return to index"]

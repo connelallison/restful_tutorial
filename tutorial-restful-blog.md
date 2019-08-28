@@ -179,3 +179,66 @@ And add the following to your `entries/new` path registration:
 ```
 
 You should now be able to navigate easily around your site.
+
+## Update and Delete
+
+In addition to reading our blog posts and adding new ones, we may also wish to edit or remove them. We will begin with editing. Insert the following code into your `entry_get` proc, just below where you append your entry_content, to add a link to an editing page:
+
+```tcl
+    append html [h br]
+    append html [h a href "http://localhost/entries/$entry_id/edit" "Edit this blog"]
+```
+
+Now, we must create the page we have linked to. Add the following to `url_handlers`:
+
+```tcl
+register GET /entries/:entry_id/edit {entry_id} {
+    #| Form for editing a specific blog entry
+    db_1row {
+        select
+	entry_title,
+	entry_content
+	from
+	entries
+	where entry_id=:entry_id
+    }
+    set form ""
+    append form [h label "Blog Title:"]
+    append form [h input type text name entry_title value $entry_title]
+    append form [h br]
+    append form [h label "Blog Content:"]
+    append form [h br]
+    append form [h textarea name entry_content style "width: 400px; height: 120px;" $entry_content]
+    append form [h br]
+    append form [h input type hidden name _method value PUT]
+    append form [h input type submit name submit value Update]
+    append form [h br]
+    append form [h br]
+    append form [h a href "http://localhost/entries" "Return to index"]
+    
+    return [qc::form method POST action "/entries/$entry_id" $form]
+}
+```
+The link should now lead to a new page containing a form prefilled with the current title and content of your blog entry. Currently, clicking the "Update" button should return "Not Found". Add this to `url_handlers`:
+
+```tcl
+register PUT /entries/:entry_id {entry_id entry_title entry_content} {
+    #| Update an entry
+    entry_update $entry_id $entry_title $entry_content
+    ns_returnredirect [qc::url "/entries/$entry_id"]
+}
+```
+
+"Not Found" should now be "Internal Server Error" due to `entry_update` not existing yet. Add it to `entry.tcl`:
+
+```tcl
+proc entry_update {entry_id entry_title entry_content} {
+    #| Update an entry
+    db_dml "update entries \
+            set [sql_set entry_title entry_content] \
+            where entry_id=:entry_id"
+    return $entry_id
+}
+```
+
+Your update function should now be working properly. Try editing a blog post to confirm this.
