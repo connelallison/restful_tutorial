@@ -24,6 +24,8 @@ create sequence entry_id_seq;
 
 If you have gone through the [database tutorial](tutorial-6-database.md), this should be familiar and require no further explanation.
 
+## Create and Read
+
 Now, create two new files in the `/var/www/alpha.co.uk/tcl` directory - one called `entry.tcl` and one called `url_handlers.tcl`. Add the following code to your `url_handlers.tcl` file:
 
 ```tcl
@@ -99,9 +101,11 @@ proc entry_get {entry_id} {
 }
 ```
 
-After saving and restarting, try submitting a blog post. You should, at last, be able to see the post you have submitted (and you should be able to see your previous posts if you change your address to have their entry_id instead).
+After saving and restarting, try submitting a blog post. You should, at last, be able to see the post you have submitted (and you should be able to see your previous posts if you change your address to have their entry_id instead). You have successfully added basic create and read functionality to your site. 
 
-You have now added create and read functionality to your site. Before moving on, let's review the code we've added, how it works, and what procs we have been using.
+### register, h, and form
+
+Before moving on, let's review some of the procs we have been using in our code.
 
 We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. For more detail, see its documentation [here](registration.md).
 
@@ -120,3 +124,58 @@ return [qc::form method POST action /entries $form]
 ```
 
 Here, it returns a form element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you. Its documentation can be read [here](procs/form.md).
+
+### Index and navigation
+
+Before we proceed to implementing update and delete functionality, let's make our site a little easier to get around by adding an index page and some links. Add the following to your `url_handlers` file:
+
+```tcl
+register GET /entries {} {
+    #| List all entries
+    return [entries_index]
+}
+```
+
+As you can probably guess, trying to access `/entries` will return a server error until we have created the `entries_index` proc. Add the following to `entry.tcl`:
+
+```tcl
+proc entries_index {} {
+    #| Return html report listing links to view each entry
+    set html ""
+    append html [h h1 "All Entries"]
+    append html [h br]
+    db_foreach {
+	select
+	entry_id,
+	entry_title 
+	from entries
+	order by entry_id asc
+    } {
+	append html [h a href "http://localhost/entries/$entry_id" $entry_title]
+	append html [h br]
+    }
+    append html [h br]
+    append html [h a href "http://localhost/entries/new" "Submit another blog"]
+    
+    return $html
+}
+```
+
+After saving and restarting, you should now be able to reach an index page at `/entries`, with links to each of your blog posts and also to the new entry form - note how we used the `h` proc to construct the links as in the example in the previous section. Let's also add a link to the index and to the form when viewing a blog post, and a link back to the index on the form page. Insert the following into your `entry_get` proc after appending the title and content:
+
+```tcl
+    append html [h br]
+    append html [h a href "http://localhost/entries/new" "Submit another blog"]
+    append html [h br]
+    append html [h a href "http://localhost/entries" "Return to index"]
+```
+
+And add the following to your `entries/new` path registration:
+
+```tcl
+    append form [h br]
+    append form [h br]
+    append form [h a href "http://localhost/entries" "Return to index"]
+```
+
+You should now be able to navigate easily around your site.
