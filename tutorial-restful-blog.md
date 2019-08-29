@@ -112,7 +112,16 @@ After saving and restarting, try submitting a blog post. You should, at last, be
 
 Before moving on, let's review some of the procs we have been using in our code.
 
-We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. For more detail, [see its documentation](registration.md).
+We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. Note the used of colon variables, for example in your handler for viewing an entry:
+
+```tcl
+register GET /entries/:entry_id {entry_id} {
+    #| View an entry
+    return [entry_get $entry_id]
+}
+```
+
+By putting a colon at the start of `:entry_id`, we instruct the handler to treat it as a variable name and pass its value to `entry_id` to be used in the function body. For more detail on the register proc, [see its documentation](registration.md).
 
 When constructing our form (and later in the `entry_get` proc), we used the `h` proc to generate html elements for us. The first argument you pass it is the type of html element you want. After specifying the type, any additional elements will be interpreted as alternating key value pairs. If the final argument is unpaired, it is placed in the body of the element. Consider this example:
 
@@ -278,3 +287,28 @@ proc entry_delete {entry_id} {
 ```
 
 Save, restart, and try deleting a blog entry. You should be sent back to the index page, and the blog you have deleted should no longer be visible there. Your site now has full CRUD functionality and a set of RESTful endpoints. Well done.
+
+## _method properties
+
+One useful feature we have used that you should take careful note of is the use of `_method` to specify the HTTP method when we are making a PUT or DELETE request. In our naviserver instance, the PUT and DELETE methods are emulated using POST requests with special hidden inputs that pass along a variable instructing the server to interpret the request as PUT or DELETE. For example, in our edit form, you may have noticed this line of code:
+
+```tcl
+append form [h input type hidden name _method value PUT]
+```
+
+And you may also have noticed that despite the update functionality being registered as a PUT request in our `url_handlers` file, our edit form appears to make a POST request:
+
+```tcl
+return [qc::form method POST action "/entries/$entry_id" $form]
+```
+
+The library knows to check for an input named `_method` when it receives the POST request, and after finding that `_method` exists and has a value of PUT, treats the POST request as a PUT request.
+
+Similarly, when we use the `form` proc to create our "Delete" button, we use a hidden `_method` input - in this case however, we let the `form` proc handle this for us by simply including "method DELETE" in the `form` proc's arguments:
+
+```tcl
+    append html [form method DELETE action /entries/$entry_id \
+		     [h input type submit name submit value "Delete this blog"]]
+```
+
+If you refer back to the `form` proc's [documentation](procs/form.md), you will see in the second example how the proc inserts the hidden input for us (in addition to the authenticity token).
