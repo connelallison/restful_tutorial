@@ -288,7 +288,7 @@ proc entry_delete {entry_id} {
 
 Save, restart, and try deleting a blog entry. You should be sent back to the index page, and the blog you have deleted should no longer be visible there. Your site now has full CRUD functionality and a set of RESTful endpoints. Well done.
 
-## _method properties
+## _method 
 
 One useful feature we have used that you should take careful note of is the use of `_method` to specify the HTTP method when we are making a PUT or DELETE request. In our naviserver instance, the PUT and DELETE methods are emulated using POST requests with special hidden inputs that pass along a variable instructing the server to interpret the request as PUT or DELETE. For example, in our edit form, you may have noticed this line of code:
 
@@ -302,7 +302,7 @@ And you may also have noticed that despite the update functionality being regist
 return [qc::form method POST action "/entries/$entry_id" $form]
 ```
 
-The library knows to check for an input named `_method` when it receives the POST request, and after finding that `_method` exists and has a value of PUT, treats the POST request as a PUT request.
+The handler knows to check for an input named `_method` when it receives the POST request, and after finding that `_method` exists and has a value of PUT, treats the POST request as a PUT request.
 
 Similarly, when we use the `form` proc to create our "Delete" button, we use a hidden `_method` input - in this case however, we let the `form` proc handle this for us by simply including "method DELETE" in the `form` proc's arguments:
 
