@@ -7,6 +7,11 @@ This tutorial will guide you through building a simple blog site with RESTful en
 
 If you encounter unexpected errors or have difficulty in getting things to work, start by checking your logs - you may find you can find and correct the problem yourself. The command `less /var/log/naviserver/qcode.log` (replacing "qcode.log" with whatever name you chose for your [full config file](qc-config.tcl)) will show you the server's logs - the End key will take you straight to the bottom, where you will find your error. You can also search the logs using `/` followed by the pattern you wish to search for.
 
+## CRUD and RESTful
+
+[CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) refers to four basic functions implemented in many sites - Create, Read, Update, and Delete - each of which roughly corresponds to an equivalent HTTP method (POST, GET, PUT, DELETE) and SQL statement (INSERT, SELECT, UPDATE, DELETE). [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) is a software architectural style that has influenced the design of many sites - in particular, you should be familiar with the common convention of [RESTful-style endpoints](https://github.com/qcode-software/qcode/blob/master/wiki/rest.md).
+
+The site you will create in this tutorial will have CRUD functionality, and its endpoints will follow the RESTful convention.
 
 ## Database setup
 
@@ -107,7 +112,7 @@ After saving and restarting, try submitting a blog post. You should, at last, be
 
 Before moving on, let's review some of the procs we have been using in our code.
 
-We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. For more detail, see its documentation [here](registration.md).
+We have made use of the `register` proc throughout the `url_handlers.tcl` file. This is used to register a path, so that the server has instructions in place for how to deal with, for example, a request such as `GET entries/1`. For more detail, [see its documentation](registration.md).
 
 When constructing our form (and later in the `entry_get` proc), we used the `h` proc to generate html elements for us. The first argument you pass it is the type of html element you want. After specifying the type, any additional elements will be interpreted as alternating key value pairs. If the final argument is unpaired, it is placed in the body of the element. Consider this example:
 
@@ -115,7 +120,7 @@ When constructing our form (and later in the `entry_get` proc), we used the `h` 
 h a href "http://localhost/entries/new" "Submit another blog"
 ```
 
-This will return a string containing the HTML for an `<a>` element that reads "Submit another blog" and links back to the new entry form. It is preferable to use the `h` proc instead of writing strings of raw HTML yourself, and essential for anything that involves variable substitution - aside from making construction of HTML easier, it also takes care of sanitising your data and preventing critical security vulnerabilities such as [SQL injection](https://en.wikipedia.org/wiki/SQL_injection). You can read its full documentation [here](procs/form.md).
+This will return a string containing the HTML for an `<a>` element that reads "Submit another blog" and links back to the new entry form. It is preferable to use the `h` proc instead of writing strings of raw HTML yourself, and essential for anything that involves variable substitution - aside from making construction of HTML easier, it also takes care of sanitising your input data and preventing critical security vulnerabilities such as [injection attacks](https://en.wikipedia.org/wiki/Code_injection#Examples). Additional examples can be found in [its documentation](procs/h.md).
 
 We also used the `form` proc to construct the form you passed to the user. It will return a form element, using the arguments you pass it as key-value pairs and the final unpaired argument you pass it (if applicable) placed in the body of the element. See our example:
 
@@ -123,7 +128,7 @@ We also used the `form` proc to construct the form you passed to the user. It wi
 return [qc::form method POST action /entries $form]
 ```
 
-Here, it returns a `<form>` element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you. Its documentation can be read [here](procs/form.md).
+Here, it returns a `<form>` element with `method="POST"` and `action="/entries"`, and then places the html we have stored in the `form` string variable inside the body of the form. Use this proc when you are constructing forms - aside from not having to write out the full HTML, it also takes care of attaching a hidden authenticity token - if you see an error that refers to there being no authenticity token, you should check to see if you have skipped over using this proc (or a similar one), which would have taken care of it for you. See its [full documentation](procs/form.md).
 
 ## Index and navigation
 
